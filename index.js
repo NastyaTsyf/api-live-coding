@@ -2,6 +2,8 @@
     // 1. Реализовать форму логина в приложении
     // 2. Реализовать форму регистрации
 
+import { deleteTodo, getTodos, addTodo } from "./api.js";
+
 
 
     // TODO: Получать из хранилища данных
@@ -14,22 +16,7 @@
     const host = "https://webdev-hw-api.vercel.app/api/v2/todos";
 
     const fetchTodosAndRender = () => {
-      return fetch(host, {
-        method: "GET",
-        headers: {
-          Authorization: token,
-        },
-      })
-        .then((response) => {
-          if (response.status === 401) {
-            // token = prompt("Введите верный пароль");
-            // fetchTodosAndRender();
-            throw new Error("Нет авторизации");
-          }
-
-          return response.json();
-        })
-        .then((responseData) => {
+      return getTodos(token).then((responseData) => {
           tasks = responseData.todos;
           renderApp();
         });
@@ -112,16 +99,7 @@
           const id = deleteButton.dataset.id;
 
           // подписываемся на успешное завершение запроса с помощью then
-          fetch("https://webdev-hw-api.vercel.app/api/todos/" + id, {
-            method: "DELETE",
-            headers: {
-              Authorization: token,
-            },
-          })
-            .then((response) => {
-              return response.json();
-            })
-            .then((responseData) => {
+          deleteTodo(token, id).then((responseData) => {
               // получили данные и рендерим их в приложении
               tasks = responseData.todos;
               renderApp();
@@ -136,22 +114,11 @@
 
       buttonElement.disabled = true;
       buttonElement.textContent = "Задача добавляеятся...";
-
-      // подписываемся на успешное завершение запроса с помощью then
-      fetch(host, {
-        method: "POST",
-        body: JSON.stringify({
-          text: textInputElement.value,
-        }),
-        headers: {
-          Authorization: token,
-        },
-      })
-        .then((response) => {
-          return response.json();
+      addTodo({
+        text: textInputElement.value,
+        token
         })
         .then(() => {
-          // TODO: кинуть исключение
           textInputElement.value = "";
         })
         .then(() => {
